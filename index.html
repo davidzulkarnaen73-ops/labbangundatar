@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eksplorasi Geometri: Bangun Datar Kelas 6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0fdf4; color: #1f2937; }
+        h1, h2, h3, .font-heading { font-family: 'Nunito', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e5e7eb; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #059669; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+        .svg-shape { transition: all 0.3s ease-out; }
+        
+        /* Game Styles */
+        .match-card { transition: all 0.2s; cursor: pointer; }
+        .match-card.selected { border-color: #3b82f6; background-color: #eff6ff; transform: scale(1.05); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .match-card.matched { background-color: #d1fae5; border-color: #10b981; color: #065f46; opacity: 0.7; pointer-events: none; transform: scale(0.95); }
+        .match-card.wrong { background-color: #fee2e2; border-color: #ef4444; animation: shake 0.4s; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .hide-section { display: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <!-- Top Navigation -->
+    <nav class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <svg class="w-8 h-8 text-yellow-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z"/></svg>
+                    <h1 class="text-2xl font-heading font-extrabold tracking-wide">Dunia Bangun Datar</h1>
+                </div>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button onclick="switchTab('materi')" id="btn-materi" class="nav-btn px-4 py-2 bg-white/20 hover:bg-white/40 rounded-full font-semibold text-sm transition-colors border-2 border-transparent">📚 Materi & Galeri</button>
+                    <button onclick="switchTab('simulasi')" id="btn-simulasi" class="nav-btn px-4 py-2 hover:bg-white/20 rounded-full font-semibold text-sm transition-colors border-2 border-transparent">🧮 Simulasi & Hitung</button>
+                    <button onclick="switchTab('bermain')" id="btn-bermain" class="nav-btn px-4 py-2 hover:bg-white/20 rounded-full font-semibold text-sm transition-colors border-2 border-transparent">🎮 Bermain</button>
+                    <button onclick="switchTab('kuis')" id="btn-kuis" class="nav-btn px-4 py-2 bg-yellow-400 text-teal-900 hover:bg-yellow-300 rounded-full font-bold text-sm transition-colors shadow-md">📝 Kuis Akhir</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+        
+        <!-- SECTION 1: MATERI & GALERI -->
+        <section id="sec-materi" class="fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-heading font-bold text-teal-800 mb-4">Galeri Bangun Datar</h2>
+                <p class="text-gray-600 text-lg max-w-2xl mx-auto">Klik pada setiap bangun datar untuk mempelajari pengertian, ciri-ciri, jumlah sisi, sudut, serta rumusnya!</p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="gallery-grid">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <!-- SECTION 2: SIMULASI & KALKULATOR -->
+        <section id="sec-simulasi" class="fade-in hide-section">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-heading font-bold text-teal-800 mb-2">Simulasi & Kalkulator</h2>
+                <p class="text-gray-600">Ubah ukuran untuk melihat perubahan bentuk secara proporsional dan cara menghitungnya!</p>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar Controls -->
+                <div class="w-full lg:w-1/3 bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Bangun Datar:</label>
+                    <select id="sim-shape-select" class="w-full p-3 rounded-xl border-2 border-teal-300 focus:border-teal-500 focus:ring-0 text-lg font-semibold text-teal-900 mb-6 bg-white outline-none cursor-pointer" onchange="updateSimInputs()">
+                        <option value="persegi">Persegi</option>
+                        <option value="persegipanjang">Persegi Panjang</option>
+                        <option value="segitiga">Segitiga Sama Kaki</option>
+                        <option value="lingkaran">Lingkaran</option>
+                        <option value="jajargenjang">Jajar Genjang</option>
+                        <option value="trapesium">Trapesium Sama Kaki</option>
+                        <option value="belahketupat">Belah Ketupat</option>
+                        <option value="layanglayang">Layang-layang</option>
+                    </select>
+
+                    <div id="sim-inputs" class="space-y-4">
+                        <!-- Inputs injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Visualization & Calculation -->
+                <div class="w-full lg:w-2/3 flex flex-col gap-6">
+                    <!-- Canvas Box -->
+                    <div class="bg-slate-100 rounded-2xl h-64 md:h-80 flex items-center justify-center relative overflow-hidden border border-slate-200 shadow-inner">
+                        <svg id="sim-canvas" class="w-full h-full p-4 drop-shadow-md" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
+                            <!-- SVG Content injected via JS -->
+                        </svg>
+                        <div class="absolute top-3 left-3 bg-white/80 px-3 py-1 rounded-full text-xs font-bold text-slate-500 shadow-sm backdrop-blur-sm">Satuan: cm</div>
+                    </div>
+
+                    <!-- Steps Output -->
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 shadow-sm">
+                            <h3 class="text-xl font-heading font-bold text-blue-800 mb-3 flex items-center gap-2">
+                                <span class="bg-blue-200 p-1.5 rounded-lg">📏</span> Keliling
+                            </h3>
+                            <div id="calc-keliling" class="text-gray-700 font-mono text-sm leading-relaxed space-y-2">
+                                <!-- injected -->
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 shadow-sm">
+                            <h3 class="text-xl font-heading font-bold text-emerald-800 mb-3 flex items-center gap-2">
+                                <span class="bg-emerald-200 p-1.5 rounded-lg">📐</span> Luas
+                            </h3>
+                            <div id="calc-luas" class="text-gray-700 font-mono text-sm leading-relaxed space-y-2">
+                                <!-- injected -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: BERMAIN -->
+        <section id="sec-bermain" class="fade-in hide-section">
+             <div class="text-center mb-8">
+                <h2 class="text-3xl font-heading font-bold text-teal-800 mb-2">Arena Bermain Geometri</h2>
+                <p class="text-gray-600">Latih ingatanmu tentang ciri-ciri dan rumus bangun datar!</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Game 1: Tebak Bangun -->
+                <div class="bg-white rounded-3xl shadow-lg p-6 border-t-8 border-yellow-400">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 font-heading">🕵️‍♂️ Tebak Bangun</h3>
+                    <div id="tebak-container" class="min-h-[250px] flex flex-col justify-center">
+                        <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 mb-6">
+                            <p class="text-gray-500 text-sm font-bold mb-2">Ciri-ciri:</p>
+                            <ul id="tebak-ciri" class="list-disc pl-5 text-gray-700 space-y-1 font-medium"></ul>
+                        </div>
+                        <div id="tebak-options" class="grid grid-cols-2 gap-3"></div>
+                        <p id="tebak-feedback" class="mt-4 text-center font-bold h-6"></p>
+                    </div>
+                </div>
+
+                <!-- Game 2: Pasang Rumus -->
+                <div class="bg-white rounded-3xl shadow-lg p-6 border-t-8 border-purple-500 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-gray-800 font-heading">🔗 Pasang Rumus</h3>
+                        <button onclick="initMatchingGame()" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg font-semibold transition-colors">Ulang Game</button>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">Klik satu kotak di kiri (Nama Bangun), lalu klik rumus yang tepat di kanan.</p>
+                    <div class="flex-grow flex gap-4">
+                        <div id="match-col-left" class="flex-1 flex flex-col gap-2"></div>
+                        <div id="match-col-right" class="flex-1 flex flex-col gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: KUIS -->
+        <section id="sec-kuis" class="fade-in hide-section max-w-3xl mx-auto">
+            <div id="quiz-intro" class="bg-white rounded-3xl shadow-lg p-8 text-center border-t-8 border-teal-500">
+                <h2 class="text-3xl font-heading font-bold text-gray-800 mb-4">Uji Kemampuanmu! 🚀</h2>
+                <p class="text-gray-600 mb-6">Jawab 15 pertanyaan pilihan ganda untuk menguji pemahamanmu tentang bangun datar. Kamu akan mendapatkan nilai dan pembahasan di akhir.</p>
+                <button onclick="startQuiz()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform transform hover:scale-105 shadow-lg">Mulai Kuis Sekarang</button>
+            </div>
+
+            <div id="quiz-area" class="bg-white rounded-3xl shadow-lg p-6 md:p-8 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <span id="quiz-progress" class="font-bold text-teal-600 bg-teal-50 px-4 py-2 rounded-full">Soal 1 / 15</span>
+                    <span id="quiz-score-live" class="font-bold text-gray-500"></span>
+                </div>
+                
+                <div id="quiz-question-container" class="mb-8">
+                    <h3 id="quiz-question" class="text-xl md:text-2xl font-semibold text-gray-800 leading-snug mb-6">Pertanyaan...</h3>
+                    <div id="quiz-options" class="flex flex-col gap-3">
+                        <!-- Options generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="quiz-result" class="bg-white rounded-3xl shadow-lg p-6 md:p-8 hidden text-center">
+                <div class="text-6xl mb-4" id="result-emoji">🏆</div>
+                <h2 class="text-3xl font-heading font-bold text-gray-800 mb-2">Hasil Kuis</h2>
+                <p class="text-xl text-gray-600 mb-6">Skor kamu: <span id="final-score" class="font-bold text-4xl text-teal-600">100</span>/100</p>
+                
+                <div class="flex justify-center gap-4 mb-8">
+                    <button onclick="startQuiz()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-xl transition-colors">Ulangi Kuis</button>
+                    <button onclick="showPembahasan()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-6 rounded-xl shadow-md transition-colors">Lihat Pembahasan</button>
+                </div>
+
+                <div id="pembahasan-area" class="hidden text-left space-y-6 mt-8 border-t border-gray-200 pt-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Pembahasan</h3>
+                    <div id="pembahasan-list" class="space-y-4"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal for Materi Detail -->
+    <div id="modal-materi" class="fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300" id="modal-content">
+            <div class="p-6 md:p-8 relative">
+                <button onclick="closeModal()" class="absolute top-4 right-4 bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-500 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-colors">&times;</button>
+                
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <div class="w-full md:w-1/3 flex flex-col items-center">
+                        <div id="modal-svg-container" class="w-48 h-48 flex items-center justify-center bg-teal-50 rounded-2xl p-4 shadow-inner">
+                            <!-- SVG -->
+                        </div>
+                        <h2 id="modal-title" class="text-2xl font-heading font-bold mt-4 text-teal-800 text-center uppercase tracking-wider">Nama Bangun</h2>
+                    </div>
+                    
+                    <div class="w-full md:w-2/3 space-y-5">
+                        <div>
+                            <h3 class="font-bold text-gray-400 uppercase text-xs tracking-widest mb-1">Pengertian</h3>
+                            <p id="modal-pengertian" class="text-gray-700 text-lg leading-relaxed"></p>
+                        </div>
+                        
+                        <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                            <h3 class="font-bold text-yellow-800 mb-2 flex items-center gap-2">✨ Sifat / Ciri-ciri</h3>
+                            <ul id="modal-sifat" class="list-disc pl-5 text-gray-700 space-y-1"></ul>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-xl">
+                                <h4 class="font-bold text-blue-800 mb-1 text-sm">Titik Sudut</h4>
+                                <p id="modal-sudut" class="text-2xl font-black text-blue-600"></p>
+                            </div>
+                            <div class="bg-emerald-50 p-4 rounded-xl">
+                                <h4 class="font-bold text-emerald-800 mb-1 text-sm">Sisi</h4>
+                                <p id="modal-sisi" class="text-2xl font-black text-emerald-600"></p>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h3 class="font-bold text-slate-700 mb-3 border-b pb-2">Rumus Matematika</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-mono text-slate-700">
+                                <div><strong class="text-indigo-600">Luas (L):</strong><br><span id="modal-rumus-luas"></span></div>
+                                <div><strong class="text-indigo-600">Keliling (K):</strong><br><span id="modal-rumus-kel"></span></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="font-bold text-gray-400 uppercase text-xs tracking-widest mb-1">Contoh dalam Kehidupan</h3>
+                            <p id="modal-contoh" class="text-gray-700"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA & LOGIC JAVASCRIPT -->
+    <script>
+        // --- 1. DATA BANGUN DATAR ---
+        const bdData = {
+            persegi: {
+                id: 'persegi', nama: 'Persegi', warna: '#3b82f6',
+                pengertian: 'Bangun datar dua dimensi yang dibentuk oleh empat buah rusuk (sisi) yang sama panjang dan memiliki empat buah sudut yang kesemuanya adalah sudut siku-siku.',
+                sifat: ['Memiliki 4 sisi sama panjang', 'Memiliki 4 titik sudut siku-siku (90°)', 'Memiliki 2 diagonal yang saling berpotongan tegak lurus', 'Memiliki 4 simetri lipat dan 4 simetri putar'],
+                sudut: '4', sisi: '4',
+                rumusLuasText: 'L = s × s', rumusKelText: 'K = 4 × s<br><span class="text-xs text-gray-500">(s = panjang sisi)</span>',
+                contoh: 'Papan catur, ubin lantai, kertas origami.',
+                svg: (color) => `<rect x="20" y="20" width="160" height="160" fill="${color}33" stroke="${color}" stroke-width="6" rx="8"/>`,
+                simInputs: [{id: 's', label: 'Panjang Sisi (s)', min: 1, max: 20, val: 10}],
+                drawSim: (vals) => {
+                    const s = vals.s * 10; 
+                    return `<rect x="${200-s/2}" y="${150-s/2}" width="${s}" height="${s}" fill="#3b82f633" stroke="#3b82f6" stroke-width="4" rx="4"/>
+                            <text x="200" y="${150+s/2+20}" text-anchor="middle" class="text-sm font-bold fill-slate-700">s = ${vals.s}</text>`;
+                },
+                calc: (vals) => {
+                    const L = vals.s * vals.s; const K = 4 * vals.s;
+                    return {
+                        L: `L = s × s<br>L = ${vals.s} × ${vals.s}<br><b class="text-emerald-700 text-lg">L = ${L} cm²</b>`,
+                        K: `K = 4 × s<br>K = 4 × ${vals.s}<br><b class="text-blue-700 text-lg">K = ${K} cm</b>`
+                    }
+                }
+            },
+            persegipanjang: {
+                id: 'persegipanjang', nama: 'Persegi Panjang', warna: '#10b981',
+                pengertian: 'Bangun datar yang memiliki dua pasang sisi sejajar dan sama panjang, serta memiliki empat sudut siku-siku.',
+                sifat: ['Memiliki 4 sisi (2 pasang sisi sejajar sama panjang)', 'Memiliki 4 sudut siku-siku (90°)', 'Diagonal-diagonalnya sama panjang', 'Memiliki 2 simetri lipat dan putar'],
+                sudut: '4', sisi: '4',
+                rumusLuasText: 'L = p × l', rumusKelText: 'K = 2 × (p + l)<br><span class="text-xs text-gray-500">(p = panjang, l = lebar)</span>',
+                contoh: 'Buku tulis, pintu, lapangan sepak bola.',
+                svg: (color) => `<rect x="10" y="50" width="180" height="100" fill="${color}33" stroke="${color}" stroke-width="6" rx="8"/>`,
+                simInputs: [{id: 'p', label: 'Panjang (p)', min: 2, max: 25, val: 15}, {id: 'l', label: 'Lebar (l)', min: 1, max: 15, val: 8}],
+                drawSim: (vals) => {
+                    const p = vals.p * 10; const l = vals.l * 10;
+                    return `<rect x="${200-p/2}" y="${150-l/2}" width="${p}" height="${l}" fill="#10b98133" stroke="#10b981" stroke-width="4" rx="4"/>
+                            <text x="200" y="${150+l/2+20}" text-anchor="middle" class="text-sm font-bold fill-slate-700">p = ${vals.p}</text>
+                            <text x="${200-p/2-20}" y="155" text-anchor="end" class="text-sm font-bold fill-slate-700">l = ${vals.l}</text>`;
+                },
+                calc: (vals) => {
+                    const L = vals.p * vals.l; const K = 2 * (vals.p + vals.l);
+                    return {
+                        L: `L = p × l<br>L = ${vals.p} × ${vals.l}<br><b class="text-emerald-700 text-lg">L = ${L} cm²</b>`,
+                        K: `K = 2 × (p + l)<br>K = 2 × (${vals.p} + ${vals.l})<br>K = 2 × ${vals.p + vals.l}<br><b class="text-blue-700 text-lg">K = ${K} cm</b>`
+                    }
+                }
+            },
+            segitiga: {
+                id: 'segitiga', nama: 'Segitiga (Sama Kaki)', warna: '#f59e0b',
+                pengertian: 'Bangun datar yang dibatasi oleh tiga buah sisi dan memiliki tiga buah titik sudut.',
+                sifat: ['Memiliki 3 sisi', 'Memiliki 3 titik sudut', 'Jumlah seluruh sudutnya adalah 180°', 'Segitiga sama kaki memiliki 2 sisi sama panjang'],
+                sudut: '3', sisi: '3',
+                rumusLuasText: 'L = ½ × a × t', rumusKelText: 'K = s1 + s2 + s3<br><span class="text-xs text-gray-500">(a=alas, t=tinggi)</span>',
+                contoh: 'Penggaris segitiga, potongan pizza, rambu lalu lintas.',
+                svg: (color) => `<polygon points="100,20 20,170 180,170" fill="${color}33" stroke="${color}" stroke-width="6" stroke-linejoin="round"/>`,
+                simInputs: [{id: 'a', label: 'Alas (a)', min: 2, max: 20, val: 12}, {id: 't', label: 'Tinggi (t)', min: 2, max: 20, val: 10}, {id: 'sm', label: 'Sisi Miring (untuk keliling)', min: 2, max: 25, val: 11.66}],
+                drawSim: (vals) => {
+                    const a = vals.a * 10; const t = vals.t * 10;
+                    return `<polygon points="200,${150-t/2} ${200-a/2},${150+t/2} ${200+a/2},${150+t/2}" fill="#f59e0b33" stroke="#f59e0b" stroke-width="4" stroke-linejoin="round"/>
+                            <!-- Garis tinggi -->
+                            <line x1="200" y1="${150-t/2}" x2="200" y2="${150+t/2}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="200" y="${150+t/2+20}" text-anchor="middle" class="text-sm font-bold fill-slate-700">a = ${vals.a}</text>
+                            <text x="205" y="${150}" text-anchor="start" class="text-sm font-bold fill-slate-700">t = ${vals.t}</text>`;
+                },
+                calc: (vals) => {
+                    const L = 0.5 * vals.a * vals.t; 
+                    const sm = parseFloat(vals.sm);
+                    const K = vals.a + sm + sm; // asumsi sama kaki untuk simulasi
+                    return {
+                        L: `L = ½ × a × t<br>L = ½ × ${vals.a} × ${vals.t}<br><b class="text-emerald-700 text-lg">L = ${L.toFixed(1).replace('.0','')} cm²</b>`,
+                        K: `K = alas + sisi_miring_1 + sisi_miring_2<br>K = ${vals.a} + ${sm} + ${sm}<br><b class="text-blue-700 text-lg">K = ${K.toFixed(2).replace('.00','')} cm</b>`
+                    }
+                }
+            },
+            lingkaran: {
+                id: 'lingkaran', nama: 'Lingkaran', warna: '#ec4899',
+                pengertian: 'Himpunan semua titik pada bidang yang memiliki jarak yang sama dari suatu titik pusat.',
+                sifat: ['Memiliki 1 sisi lengkung (tidak ada sudut)', 'Jarak pusat ke tepi disebut jari-jari (r)', 'Simetri lipat dan putar tak terhingga'],
+                sudut: '0', sisi: '1',
+                rumusLuasText: 'L = π × r × r', rumusKelText: 'K = 2 × π × r<br><span class="text-xs text-gray-500">(π = 22/7 atau 3.14)</span>',
+                contoh: 'Roda, uang logam, jam dinding, cincin.',
+                svg: (color) => `<circle cx="100" cy="100" r="80" fill="${color}33" stroke="${color}" stroke-width="6"/>`,
+                simInputs: [{id: 'r', label: 'Jari-jari (r)', min: 1, max: 14, val: 7}],
+                drawSim: (vals) => {
+                    const r = vals.r * 8; 
+                    return `<circle cx="200" cy="150" r="${r}" fill="#ec489933" stroke="#ec4899" stroke-width="4"/>
+                            <line x1="200" y1="150" x2="${200+r}" y2="150" stroke="#ec4899" stroke-width="3"/>
+                            <circle cx="200" cy="150" r="3" fill="#ec4899"/>
+                            <text x="${200+r/2}" y="145" text-anchor="middle" class="text-sm font-bold fill-slate-700">r = ${vals.r}</text>`;
+                },
+                calc: (vals) => {
+                    let pi_str = '3.14'; let pi_val = 3.14;
+                    if(vals.r % 7 === 0) { pi_str = '22/7'; pi_val = 22/7; }
+                    
+                    const L = pi_val * vals.r * vals.r;
+                    const K = 2 * pi_val * vals.r;
+                    
+                    return {
+                        L: `L = π × r × r<br>L = ${pi_str} × ${vals.r} × ${vals.r}<br><b class="text-emerald-700 text-lg">L = ${Math.round(L*100)/100} cm²</b>`,
+                        K: `K = 2 × π × r<br>K = 2 × ${pi_str} × ${vals.r}<br><b class="text-blue-700 text-lg">K = ${Math.round(K*100)/100} cm</b>`
+                    }
+                }
+            },
+            jajargenjang: {
+                id: 'jajargenjang', nama: 'Jajar Genjang', warna: '#8b5cf6',
+                pengertian: 'Bangun datar segi empat dengan sisi-sisi yang berhadapan sejajar dan sama panjang.',
+                sifat: ['Memiliki 4 sisi (2 pasang sisi sejajar)', 'Sudut yang berhadapan sama besar', 'Diagonalnya saling membagi dua sama panjang'],
+                sudut: '4', sisi: '4',
+                rumusLuasText: 'L = a × t', rumusKelText: 'K = 2 × (a + m)<br><span class="text-xs text-gray-500">(a=alas, m=sisi miring)</span>',
+                contoh: 'Penghapus, motif batik parang.',
+                svg: (color) => `<polygon points="40,160 180,160 160,40 20,40" fill="${color}33" stroke="${color}" stroke-width="6" stroke-linejoin="round"/>`,
+                simInputs: [{id: 'a', label: 'Alas (a)', min: 5, max: 20, val: 12}, {id: 't', label: 'Tinggi (t)', min: 3, max: 15, val: 8}, {id: 'm', label: 'Sisi Miring (m)', min: 4, max: 18, val: 9}],
+                drawSim: (vals) => {
+                    const a = vals.a * 10; const t = vals.t * 10; const offset = 30; // visual slant
+                    const startX = 200 - a/2 - offset/2;
+                    const endX = startX + a;
+                    const topY = 150 - t/2; const botY = 150 + t/2;
+                    return `<polygon points="${startX},${botY} ${endX},${botY} ${endX+offset},${topY} ${startX+offset},${topY}" fill="#8b5cf633" stroke="#8b5cf6" stroke-width="4" stroke-linejoin="round"/>
+                            <line x1="${endX}" y1="${botY}" x2="${endX}" y2="${topY}" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="200" y="${botY+20}" text-anchor="middle" class="text-sm font-bold fill-slate-700">a = ${vals.a}</text>
+                            <text x="${endX+5}" y="${150}" text-anchor="start" class="text-sm font-bold fill-slate-700">t = ${vals.t}</text>
+                            <text x="${startX+offset/2 - 10}" y="150" text-anchor="end" class="text-sm font-bold fill-slate-700">m = ${vals.m}</text>`;
+                },
+                calc: (vals) => {
+                    const L = vals.a * vals.t; const K = 2 * (vals.a + vals.m);
+                    return {
+                        L: `L = a × t<br>L = ${vals.a} × ${vals.t}<br><b class="text-emerald-700 text-lg">L = ${L} cm²</b>`,
+                        K: `K = 2 × (a + m)<br>K = 2 × (${vals.a} + ${vals.m})<br><b class="text-blue-700 text-lg">K = ${K} cm</b>`
+                    }
+                }
+            },
+            trapesium: {
+                id: 'trapesium', nama: 'Trapesium', warna: '#f97316',
+                pengertian: 'Bangun segi empat yang memiliki tepat satu pasang sisi yang sejajar.',
+                sifat: ['Memiliki 4 sisi (1 pasang sisi sejajar)', 'Jumlah sudut berdekatan di antara sisi sejajar adalah 180°'],
+                sudut: '4', sisi: '4',
+                rumusLuasText: 'L = ½ × (a + b) × t', rumusKelText: 'K = a + b + c + d<br><span class="text-xs text-gray-500">(a,b sejajar; c,d miring)</span>',
+                contoh: 'Atap rumah, perahu.',
+                svg: (color) => `<polygon points="20,160 180,160 140,50 60,50" fill="${color}33" stroke="${color}" stroke-width="6" stroke-linejoin="round"/>`,
+                simInputs: [{id: 'sa', label: 'Sisi Atas (a)', min: 4, max: 15, val: 8}, {id: 'sb', label: 'Sisi Bawah (b)', min: 8, max: 25, val: 14}, {id: 't', label: 'Tinggi (t)', min: 3, max: 15, val: 6}, {id: 'sm', label: 'Sisi Miring (c=d)', min:3, max:15, val: 6.7}],
+                drawSim: (vals) => {
+                    const a = vals.sa * 8; const b = vals.sb * 8; const t = vals.t * 8;
+                    const topY = 150 - t/2; const botY = 150 + t/2;
+                    return `<polygon points="${200-b/2},${botY} ${200+b/2},${botY} ${200+a/2},${topY} ${200-a/2},${topY}" fill="#f9731633" stroke="#f97316" stroke-width="4" stroke-linejoin="round"/>
+                            <line x1="${200+a/2}" y1="${topY}" x2="${200+a/2}" y2="${botY}" stroke="#f97316" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="200" y="${topY-10}" text-anchor="middle" class="text-sm font-bold fill-slate-700">a = ${vals.sa}</text>
+                            <text x="200" y="${botY+20}" text-anchor="middle" class="text-sm font-bold fill-slate-700">b = ${vals.sb}</text>
+                            <text x="${200+a/2+5}" y="150" text-anchor="start" class="text-sm font-bold fill-slate-700">t = ${vals.t}</text>`;
+                },
+                calc: (vals) => {
+                    const L = 0.5 * (vals.sa + vals.sb) * vals.t;
+                    const K = vals.sa + vals.sb + (parseFloat(vals.sm)*2);
+                    return {
+                        L: `L = ½ × (a + b) × t<br>L = ½ × (${vals.sa} + ${vals.sb}) × ${vals.t}<br><b class="text-emerald-700 text-lg">L = ${L} cm²</b>`,
+                        K: `K = a + b + c + d<br>K = ${vals.sa} + ${vals.sb} + ${vals.sm} + ${vals.sm}<br><b class="text-blue-700 text-lg">K = ${K.toFixed(2).replace('.00','')} cm</b>`
+                    }
+                }
+            },
+            belahketupat: {
+                id: 'belahketupat', nama: 'Belah Ketupat', warna: '#06b6d4',
+                pengertian: 'Bangun datar segi empat yang keempat sisinya sama panjang, dan sudut-sudut yang berhadapan sama besar.',
+                sifat: ['4 sisi sama panjang', 'Sudut berhadapan sama besar', 'Kedua diagonal saling tegak lurus membagi dua', 'Memiliki 2 simetri lipat'],
+                sudut: '4', sisi: '4',
+                rumusLuasText: 'L = ½ × d1 × d2', rumusKelText: 'K = 4 × s',
+                contoh: 'Ketupat, rambu lalu lintas, perhiasan.',
+                svg: (color) => `<polygon points="100,10 180,100 100,190 20,100" fill="${color}33" stroke="${color}" stroke-width="6" stroke-linejoin="round"/>`,
+                simInputs: [{id: 'd1', label: 'Diagonal 1 (d1)', min: 4, max: 20, val: 12}, {id: 'd2', label: 'Diagonal 2 (d2)', min: 4, max: 20, val: 16}, {id: 's', label: 'Panjang Sisi (s)', min: 1, max: 20, val: 10}],
+                drawSim: (vals) => {
+                    const d1 = vals.d1 * 8; const d2 = vals.d2 * 8;
+                    return `<polygon points="200,${150-d1/2} ${200+d2/2},150 200,${150+d1/2} ${200-d2/2},150" fill="#06b6d433" stroke="#06b6d4" stroke-width="4" stroke-linejoin="round"/>
+                            <line x1="200" y1="${150-d1/2}" x2="200" y2="${150+d1/2}" stroke="#06b6d4" stroke-width="2" stroke-dasharray="4"/>
+                            <line x1="${200-d2/2}" y1="150" x2="${200+d2/2}" y2="150" stroke="#06b6d4" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="205" y="${150-d1/4}" text-anchor="start" class="text-sm font-bold fill-slate-700">d1</text>
+                            <text x="${200+d2/4}" y="145" text-anchor="middle" class="text-sm font-bold fill-slate-700">d2</text>`;
+                },
+                calc: (vals) => {
+                    const L = 0.5 * vals.d1 * vals.d2; const K = 4 * vals.s;
+                    return {
+                        L: `L = ½ × d1 × d2<br>L = ½ × ${vals.d1} × ${vals.d2}<br><b class="text-emerald-700 text-lg">L = ${L} cm²</b>`,
+                        K: `K = 4 × s<br>K = 4 × ${vals.s}<br><b class="text-blue-700 text-lg">K = ${K} cm</b>`
+                    }
+                }
+            },
+            layanglayang: {
+                id: 'layanglayang', nama: 'Layang-layang', warna: '#e11d48',
+                pengertian: 'Bangun segi empat yang memiliki dua pasang sisi yang masing-masing sama panjang, tetapi tidak semua sisinya sama panjang.',
+                sifat: ['Memiliki 2 pasang sisi berdekatan sama panjang', 'Sepasang sudut berhadapan sama besar', 'Diagonalnya berpotongan tegak lurus', '1 simetri lipat'],
+                sudut: '4', sisi: '4',
+                rumusLuasText: 'L = ½ × d1 × d2', rumusKelText: 'K = 2 × (a + b)',
+                contoh: 'Mainan layang-layang.',
+                svg: (color) => `<polygon points="100,20 160,80 100,180 40,80" fill="${color}33" stroke="${color}" stroke-width="6" stroke-linejoin="round"/>`,
+                simInputs: [{id: 'd1', label: 'Diagonal 1 (d1 horizontal)', min: 6, max: 20, val: 12}, {id: 'd2', label: 'Diagonal 2 (d2 vertikal)', min: 8, max: 25, val: 20}, {id: 'sa', label: 'Sisi Pendek (a)', min: 1, max: 15, val: 8}, {id: 'sb', label: 'Sisi Panjang (b)', min: 1, max: 20, val: 15}],
+                drawSim: (vals) => {
+                    const d1 = vals.d1 * 8; const d2 = vals.d2 * 8;
+                    const topPart = d2 * 0.3; const botPart = d2 * 0.7; // fixed proportion for visual
+                    return `<polygon points="200,${150-topPart} ${200+d1/2},150 200,${150+botPart} ${200-d1/2},150" fill="#e11d4833" stroke="#e11d48" stroke-width="4" stroke-linejoin="round"/>
+                            <line x1="200" y1="${150-topPart}" x2="200" y2="${150+botPart}" stroke="#e11d48" stroke-width="2" stroke-dasharray="4"/>
+                            <line x1="${200-d1/2}" y1="150" x2="${200+d1/2}" y2="150" stroke="#e11d48" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="205" y="${150+botPart/2}" text-anchor="start" class="text-sm font-bold fill-slate-700">d2 = ${vals.d2}</text>
+                            <text x="${200-d1/4}" y="145" text-anchor="middle" class="text-sm font-bold fill-slate-700">d1 = ${vals.d1}</text>`;
+                },
+                calc: (vals) => {
+                    const L = 0.5 * vals.d1 * vals.d2; const K = 2 * (parseFloat(vals.sa) + parseFloat(vals.sb));
+                    return {
+                        L: `L = ½ × d1 × d2<br>L = ½ × ${vals.d1} × ${vals.d2}<br><b class="text-emerald-700 text-lg">L = ${L} cm²</b>`,
+                        K: `K = 2 × (a + b)<br>K = 2 × (${vals.sa} + ${vals.sb})<br><b class="text-blue-700 text-lg">K = ${K.toFixed(2).replace('.00','')} cm</b>`
+                    }
+                }
+            }
+        };
+
+        // --- CORE NAVIGATION ---
+        function switchTab(tabId) {
+            // Update buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-white/20', 'border-white');
+                if(btn.id !== 'btn-kuis') btn.classList.add('border-transparent');
+            });
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if(tabId !== 'kuis') {
+                activeBtn.classList.add('bg-white/20', 'border-white');
+            }
+
+            // Update sections
+            ['sec-materi', 'sec-simulasi', 'sec-bermain', 'sec-kuis'].forEach(id => {
+                document.getElementById(id).classList.add('hide-section');
+            });
+            
+            const activeSection = document.getElementById(`sec-${tabId}`);
+            activeSection.classList.remove('hide-section');
+            
+            // Trigger specific initializers
+            if(tabId === 'simulasi') initSimulasi();
+            if(tabId === 'bermain') { initTebak(); initMatchingGame(); }
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- 1. MATERI & GALERI LOGIC ---
+        function initGallery() {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '';
+            
+            Object.values(bdData).forEach(shape => {
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-3xl p-6 shadow-md hover:shadow-xl cursor-pointer transform hover:-translate-y-1 transition-all border-b-4 duration-300 flex flex-col items-center`;
+                card.style.borderBottomColor = shape.warna;
+                card.onclick = () => openModal(shape.id);
+                
+                card.innerHTML = `
+                    <div class="w-24 h-24 mb-4 flex items-center justify-center">
+                        <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-sm">${shape.svg(shape.warna)}</svg>
+                    </div>
+                    <h3 class="font-heading font-bold text-lg text-gray-800 text-center">${shape.nama}</h3>
+                    <p class="text-xs text-gray-500 mt-2 text-center bg-gray-100 px-3 py-1 rounded-full">Klik untuk detail</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openModal(id) {
+            const data = bdData[id];
+            document.getElementById('modal-title').innerText = data.nama;
+            document.getElementById('modal-title').style.color = data.warna;
+            document.getElementById('modal-svg-container').innerHTML = `<svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-md">${data.svg(data.warna)}</svg>`;
+            document.getElementById('modal-pengertian').innerText = data.pengertian;
+            
+            const listSifat = document.getElementById('modal-sifat');
+            listSifat.innerHTML = '';
+            data.sifat.forEach(s => { listSifat.innerHTML += `<li>${s}</li>`; });
+            
+            document.getElementById('modal-sudut').innerText = data.sudut;
+            document.getElementById('modal-sisi').innerText = data.sisi;
+            document.getElementById('modal-rumus-luas').innerHTML = data.rumusLuasText;
+            document.getElementById('modal-rumus-kel').innerHTML = data.rumusKelText;
+            document.getElementById('modal-contoh').innerText = data.contoh;
+            
+            const modal = document.getElementById('modal-materi');
+            const modalContent = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal-materi');
+            const modalContent = document.getElementById('modal-content');
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // --- 2. SIMULASI LOGIC ---
+        function initSimulasi() {
+            updateSimInputs();
+        }
+
+        function updateSimInputs() {
+            const shapeId = document.getElementById('sim-shape-select').value;
+            const data = bdData[shapeId];
+            const container = document.getElementById('sim-inputs');
+            container.innerHTML = '';
+
+            data.simInputs.forEach(inp => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-sm font-bold text-gray-600">${inp.label}</label>
+                        <span class="text-sm font-mono bg-teal-100 text-teal-800 px-2 py-0.5 rounded" id="val-${inp.id}">${inp.val}</span>
+                    </div>
+                    <input type="range" id="range-${inp.id}" min="${inp.min}" max="${inp.max}" value="${inp.val}" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-500" oninput="handleSimChange()">
+                `;
+                container.appendChild(div);
+            });
+            handleSimChange();
+        }
+
+        function handleSimChange() {
+            const shapeId = document.getElementById('sim-shape-select').value;
+            const data = bdData[shapeId];
+            let currentVals = {};
+
+            data.simInputs.forEach(inp => {
+                const val = document.getElementById(`range-${inp.id}`).value;
+                document.getElementById(`val-${inp.id}`).innerText = val;
+                currentVals[inp.id] = parseFloat(val);
+            });
+
+            // Update SVG Canvas
+            const canvas = document.getElementById('sim-canvas');
+            canvas.innerHTML = data.drawSim(currentVals);
+
+            // Update Calculations
+            const hasil = data.calc(currentVals);
+            document.getElementById('calc-keliling').innerHTML = hasil.K;
+            document.getElementById('calc-luas').innerHTML = hasil.L;
+        }
+
+        // --- 3. BERMAIN LOGIC ---
+        const gameQuestions = [
+            { ciri: ['Memiliki 4 sisi sama panjang', 'Memiliki 4 sudut siku-siku'], ans: 'persegi', options: ['persegi', 'persegipanjang', 'belahketupat', 'jajargenjang'] },
+            { ciri: ['Memiliki 3 sisi', 'Jumlah sudutnya 180°'], ans: 'segitiga', options: ['segitiga', 'lingkaran', 'trapesium', 'layanglayang'] },
+            { ciri: ['Satu sisi lengkung tertutup', 'Jarak pusat ke tepi selalu sama'], ans: 'lingkaran', options: ['lingkaran', 'segitiga', 'jajargenjang', 'persegi'] },
+            { ciri: ['4 sisi (2 pasang sejajar)', 'Sudut berhadapan sama besar', 'Bukan sudut siku-siku'], ans: 'jajargenjang', options: ['jajargenjang', 'persegipanjang', 'trapesium', 'belahketupat'] },
+            { ciri: ['Memiliki tepat 1 pasang sisi sejajar'], ans: 'trapesium', options: ['trapesium', 'persegipanjang', 'layanglayang', 'belahketupat'] }
+        ];
+        let currentTebak = 0;
+
+        function initTebak() {
+            const q = gameQuestions[currentTebak];
+            const ciriList = document.getElementById('tebak-ciri');
+            ciriList.innerHTML = q.ciri.map(c => `<li>${c}</li>`).join('');
+            
+            const optsDiv = document.getElementById('tebak-options');
+            optsDiv.innerHTML = '';
+            
+            // Shuffle options
+            let opts = [...q.options].sort(() => Math.random() - 0.5);
+            
+            opts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'py-3 px-4 bg-white border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:border-yellow-400 hover:bg-yellow-50 transition-all';
+                btn.innerText = bdData[opt].nama;
+                btn.onclick = () => checkTebak(opt, q.ans, btn);
+                optsDiv.appendChild(btn);
+            });
+            document.getElementById('tebak-feedback').innerText = '';
+        }
+
+        function checkTebak(selected, correct, btnElement) {
+            const feedback = document.getElementById('tebak-feedback');
+            if(selected === correct) {
+                btnElement.classList.replace('border-gray-200', 'border-green-500');
+                btnElement.classList.replace('hover:border-yellow-400', 'bg-green-100');
+                btnElement.classList.add('text-green-700');
+                feedback.innerHTML = '<span class="text-green-600">Benar Sekali! 🎉</span>';
+                setTimeout(() => {
+                    currentTebak = (currentTebak + 1) % gameQuestions.length;
+                    initTebak();
+                }, 1500);
+            } else {
+                btnElement.classList.replace('border-gray-200', 'border-red-500');
+                btnElement.classList.add('bg-red-50', 'text-red-700');
+                feedback.innerHTML = '<span class="text-red-500">Coba lagi! ❌</span>';
+                setTimeout(() => {
+                    btnElement.classList.remove('border-red-500', 'bg-red-50', 'text-red-700');
+                    btnElement.classList.add('border-gray-200');
+                    feedback.innerText = '';
+                }, 1000);
+            }
+        }
+
+        // Matching Game
+        let selectedLeft = null;
+        let selectedRight = null;
+        let matchesFound = 0;
+
+        function initMatchingGame() {
+            const leftCol = document.getElementById('match-col-left');
+            const rightCol = document.getElementById('match-col-right');
+            leftCol.innerHTML = ''; rightCol.innerHTML = '';
+            matchesFound = 0;
+            selectedLeft = null; selectedRight = null;
+
+            const shapes = ['persegi', 'persegipanjang', 'segitiga', 'lingkaran', 'trapesium'];
+            
+            let leftItems = shapes.map(id => ({id: id, text: bdData[id].nama, type: 'left'}));
+            let rightItems = shapes.map(id => ({id: id, text: bdData[id].rumusLuasText.replace(/<[^>]*>?/gm, ''), type: 'right'}));
+
+            // Shuffle
+            leftItems = leftItems.sort(() => Math.random() - 0.5);
+            rightItems = rightItems.sort(() => Math.random() - 0.5);
+
+            leftItems.forEach(item => leftCol.appendChild(createMatchCard(item)));
+            rightItems.forEach(item => rightCol.appendChild(createMatchCard(item)));
+        }
+
+        function createMatchCard(item) {
+            const div = document.createElement('div');
+            div.className = `match-card p-4 border-2 border-gray-200 rounded-xl font-bold text-center text-gray-700 bg-white shadow-sm hover:shadow-md select-none`;
+            div.innerHTML = item.type === 'left' ? item.text : `<span class="font-mono text-sm">${item.text}</span>`;
+            div.dataset.id = item.id;
+            div.dataset.type = item.type;
+            
+            div.onclick = () => handleMatchClick(div);
+            return div;
+        }
+
+        function handleMatchClick(card) {
+            if(card.classList.contains('matched')) return;
+
+            if(card.dataset.type === 'left') {
+                if(selectedLeft) selectedLeft.classList.remove('selected');
+                selectedLeft = card;
+                card.classList.add('selected');
+            } else {
+                if(selectedRight) selectedRight.classList.remove('selected');
+                selectedRight = card;
+                card.classList.add('selected');
+            }
+
+            if(selectedLeft && selectedRight) {
+                if(selectedLeft.dataset.id === selectedRight.dataset.id) {
+                    // Match
+                    selectedLeft.classList.replace('selected', 'matched');
+                    selectedRight.classList.replace('selected', 'matched');
+                    selectedLeft = null; selectedRight = null;
+                    matchesFound++;
+                    if(matchesFound === 5) {
+                        setTimeout(() => { alert("Hebat! Kamu berhasil memasangkan semua rumus!"); initMatchingGame(); }, 500);
+                    }
+                } else {
+                    // Wrong
+                    selectedLeft.classList.add('wrong');
+                    selectedRight.classList.add('wrong');
+                    const tl = selectedLeft, tr = selectedRight;
+                    selectedLeft = null; selectedRight = null;
+                    setTimeout(() => {
+                        tl.classList.remove('wrong', 'selected');
+                        tr.classList.remove('wrong', 'selected');
+                    }, 400);
+                }
+            }
+        }
+
+        // --- 4. KUIS LOGIC ---
+        const quizData = [
+            { q: "Bangun datar yang memiliki 4 sisi sama panjang dan 4 sudut siku-siku adalah...", opts: ["Persegi Panjang", "Belah Ketupat", "Persegi", "Jajar Genjang"], ans: 2, bahas: "Persegi memiliki 4 sisi sama panjang dan 4 sudut siku-siku (90°)." },
+            { q: "Rumus luas dan keliling persegi panjang yang benar adalah...", opts: ["L = p × l, K = 2 + p + l", "L = p × l, K = 2 × (p + l)", "L = p + l, K = p × l", "L = ½ × p × l, K = 2 × p × l"], ans: 1, bahas: "Luas persegi panjang adalah panjang dikali lebar. Kelilingnya adalah 2 kali jumlah panjang dan lebar." },
+            { q: "Sebuah segitiga memiliki alas 8 cm dan tinggi 6 cm. Luas segitiga tersebut adalah...", opts: ["48 cm²", "24 cm²", "14 cm²", "28 cm²"], ans: 1, bahas: "L = ½ × a × t = ½ × 8 × 6 = 24 cm²." },
+            { q: "Jika diameter sebuah lingkaran adalah 14 cm, berapakah kelilingnya? (π = 22/7)", opts: ["44 cm", "22 cm", "88 cm", "154 cm"], ans: 0, bahas: "Keliling = π × d = 22/7 × 14 = 44 cm." },
+            { q: "Bangun datar yang memiliki simetri lipat dan simetri putar tak terhingga adalah...", opts: ["Segitiga Sama Sisi", "Persegi", "Lingkaran", "Trapesium"], ans: 2, bahas: "Lingkaran memiliki jarak yang sama dari titik pusat ke segala arah, sehingga simetri lipat dan putarnya tak terhingga." },
+            { q: "Sifat jajar genjang yang membedakannya dengan persegi panjang adalah...", opts: ["Sisi yang berhadapan sama panjang", "Sudutnya tidak siku-siku", "Memiliki 4 titik sudut", "Memiliki 2 diagonal"], ans: 1, bahas: "Jajar genjang memiliki sudut berhadapan yang sama besar, namun bukan siku-siku (90°), berbeda dengan persegi panjang." },
+            { q: "Luas sebuah persegi adalah 81 cm². Berapakah panjang sisinya?", opts: ["8 cm", "9 cm", "10 cm", "11 cm"], ans: 1, bahas: "L = s × s. Akar pangkat dua dari 81 adalah 9. Jadi sisinya 9 cm." },
+            { q: "Rumus luas trapesium adalah...", opts: ["½ × (a + b) × t", "½ × a × t", "a × t", "½ × d1 × d2"], ans: 0, bahas: "Luas Trapesium = ½ × (Jumlah sisi sejajar) × tinggi." },
+            { q: "Sebuah belah ketupat memiliki diagonal 10 cm dan 12 cm. Luasnya adalah...", opts: ["120 cm²", "60 cm²", "22 cm²", "44 cm²"], ans: 1, bahas: "L = ½ × d1 × d2 = ½ × 10 × 12 = 60 cm²." },
+            { q: "Bangun datar segi empat yang dibentuk oleh dua segitiga sama kaki yang alasnya sama panjang dan berimpit adalah...", opts: ["Jajar Genjang", "Belah Ketupat", "Layang-layang", "Trapesium"], ans: 2, bahas: "Layang-layang terbentuk dari gabungan dua segitiga sama kaki yang alasnya berimpit." },
+            { q: "Keliling segitiga sama sisi dengan panjang sisi 15 cm adalah...", opts: ["30 cm", "45 cm", "60 cm", "225 cm"], ans: 1, bahas: "Segitiga sama sisi memiliki 3 sisi sama panjang. Keliling = 3 × 15 = 45 cm." },
+            { q: "Taman berbentuk lingkaran memiliki jari-jari 10 m. Luas taman tersebut adalah... (π = 3,14)", opts: ["314 m²", "62.8 m²", "31.4 m²", "3140 m²"], ans: 0, bahas: "L = π × r × r = 3,14 × 10 × 10 = 314 m²." },
+            { q: "Berapa jumlah sisi sejajar pada trapesium?", opts: ["0 pasang", "1 pasang", "2 pasang", "3 pasang"], ans: 1, bahas: "Trapesium memiliki tepat 1 pasang sisi yang berhadapan dan sejajar." },
+            { q: "Sebuah layang-layang memiliki sisi pendek 5 cm dan sisi panjang 8 cm. Kelilingnya adalah...", opts: ["13 cm", "26 cm", "40 cm", "20 cm"], ans: 1, bahas: "Keliling = 2 × (sisi pendek + sisi panjang) = 2 × (5 + 8) = 2 × 13 = 26 cm." },
+            { q: "Rumus luas layang-layang sama dengan rumus luas bangun...", opts: ["Persegi", "Jajar Genjang", "Belah Ketupat", "Trapesium"], ans: 2, bahas: "Rumus luas layang-layang dan belah ketupat adalah sama, yaitu ½ × d1 × d2." }
+        ];
+
+        let currentQ = 0;
+        let userAnswers = [];
+
+        function startQuiz() {
+            currentQ = 0;
+            userAnswers = new Array(15).fill(null);
+            document.getElementById('quiz-intro').classList.add('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-area').classList.remove('hidden');
+            document.getElementById('pembahasan-area').classList.add('hidden');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            document.getElementById('quiz-progress').innerText = `Soal ${currentQ + 1} / 15`;
+            
+            // Hitung soal terjawab
+            const answered = userAnswers.filter(a => a !== null).length;
+            document.getElementById('quiz-score-live').innerText = `${answered} dijawab`;
+
+            const q = quizData[currentQ];
+            document.getElementById('quiz-question').innerText = `${currentQ + 1}. ${q.q}`;
+            
+            const optsContainer = document.getElementById('quiz-options');
+            optsContainer.innerHTML = '';
+            
+            q.opts.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                const isSelected = userAnswers[currentQ] === index;
+                
+                btn.className = `w-full text-left p-4 rounded-xl border-2 font-medium transition-all ${isSelected ? 'border-teal-500 bg-teal-50 text-teal-800' : 'border-gray-200 hover:border-teal-300 hover:bg-slate-50 text-gray-700'}`;
+                btn.innerHTML = `<span class="inline-block w-8 h-8 rounded-full text-center leading-8 mr-3 ${isSelected ? 'bg-teal-500 text-white' : 'bg-gray-200'}">${['A','B','C','D'][index]}</span> ${opt}`;
+                
+                btn.onclick = () => {
+                    userAnswers[currentQ] = index;
+                    renderQuestion(); // Re-render to show selection
+                    
+                    // Auto next after slight delay
+                    setTimeout(() => {
+                        if(currentQ < 14) {
+                            currentQ++;
+                            renderQuestion();
+                        } else {
+                            showResult();
+                        }
+                    }, 400);
+                };
+                optsContainer.appendChild(btn);
+            });
+
+            // Navigation buttons (Prev/Next)
+            const navDiv = document.createElement('div');
+            navDiv.className = 'flex justify-between mt-8 pt-6 border-t border-gray-100';
+            
+            const btnPrev = document.createElement('button');
+            btnPrev.className = `px-6 py-2 rounded-xl font-bold ${currentQ === 0 ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'text-teal-700 bg-teal-100 hover:bg-teal-200'}`;
+            btnPrev.innerText = '← Sebelumnya';
+            btnPrev.disabled = currentQ === 0;
+            btnPrev.onclick = () => { currentQ--; renderQuestion(); };
+            
+            const btnNext = document.createElement('button');
+            if(currentQ === 14) {
+                btnNext.className = 'px-6 py-2 rounded-xl font-bold text-white bg-green-500 hover:bg-green-600 shadow-md';
+                btnNext.innerText = 'Selesai & Kumpulkan';
+                btnNext.onclick = () => showResult();
+            } else {
+                btnNext.className = 'px-6 py-2 rounded-xl font-bold text-teal-700 bg-teal-100 hover:bg-teal-200';
+                btnNext.innerText = 'Selanjutnya →';
+                btnNext.onclick = () => { currentQ++; renderQuestion(); };
+            }
+
+            navDiv.appendChild(btnPrev);
+            navDiv.appendChild(btnNext);
+            optsContainer.appendChild(navDiv);
+        }
+
+        function showResult() {
+            // Cek apakah ada yang belum dijawab
+            const unanswered = userAnswers.filter(a => a === null).length;
+            if(unanswered > 0) {
+                const conf = confirm(`Masih ada ${unanswered} soal yang belum dijawab. Yakin ingin mengumpulkan?`);
+                if(!conf) return;
+            }
+
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            let correctCount = 0;
+            userAnswers.forEach((ans, idx) => {
+                if(ans === quizData[idx].ans) correctCount++;
+            });
+
+            const score = Math.round((correctCount / 15) * 100);
+            document.getElementById('final-score').innerText = score;
+            
+            let emoji = '👍';
+            if(score === 100) emoji = '🏆';
+            else if(score >= 80) emoji = '🌟';
+            else if(score >= 60) emoji = '😊';
+            else emoji = '📚';
+            
+            document.getElementById('result-emoji').innerText = emoji;
+
+            // Generate Pembahasan
+            const listBahas = document.getElementById('pembahasan-list');
+            listBahas.innerHTML = '';
+            quizData.forEach((q, idx) => {
+                const isCorrect = userAnswers[idx] === q.ans;
+                const userAnsText = userAnswers[idx] !== null ? q.opts[userAnswers[idx]] : 'Tidak dijawab';
+                
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-xl border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
+                div.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="mt-1 ${isCorrect ? 'text-green-500' : 'text-red-500'} font-bold text-xl">${isCorrect ? '✓' : '✗'}</div>
+                        <div>
+                            <p class="font-bold text-gray-800 mb-1">${idx + 1}. ${q.q}</p>
+                            <p class="text-sm mb-1 text-gray-600">Jawabanmu: <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-600'}">${userAnsText}</span></p>
+                            ${!isCorrect ? `<p class="text-sm mb-2 text-gray-600">Kunci Jawaban: <span class="font-semibold text-green-700">${q.opts[q.ans]}</span></p>` : ''}
+                            <div class="mt-2 text-sm bg-white p-3 rounded-lg border border-gray-200 text-gray-700"><strong class="text-teal-700">Pembahasan:</strong> ${q.bahas}</div>
+                        </div>
+                    </div>
+                `;
+                listBahas.appendChild(div);
+            });
+        }
+
+        function showPembahasan() {
+            const el = document.getElementById('pembahasan-area');
+            el.classList.toggle('hidden');
+            if(!el.classList.contains('hidden')) {
+                el.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // --- INIT APP ---
+        window.onload = () => {
+            initGallery();
+            // Close modal when clicking outside
+            document.getElementById('modal-materi').addEventListener('click', function(e) {
+                if(e.target === this) closeModal();
+            });
+        };
+
+    </script>
+</body>
+</html>
